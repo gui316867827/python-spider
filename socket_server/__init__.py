@@ -20,8 +20,8 @@ def baiduTiebaSpider(data):
             contents += content_list
         try:
             response_temp['picPath'] = jieba_words.createWordCloud(contents)
-        except:
-            pass
+        except Exception as ex:
+            print(ex)
         print('spider end !!!  has cost %ds' % (int(time.time()) - startTime))
     else :
         response_temp['status'] = 'error'

@@ -31,7 +31,7 @@ class User():
         else:
             return False
     
-    def __dict__(self):
+    def to_dict(self):
         u = {}
         u['name'] = self.name
         u['sex'] = self.sex
@@ -56,7 +56,7 @@ def parse_user(url):
         age_ = re.findall(r'吧龄:(.+?)<', str(userInfo))[0]
         titles_ = re.findall(r'发贴:(.+?)<', str(userInfo))[0]
         u = User(name_, url, sex_, age_, titles_)
-        return str(json.dumps(u.__dict__), ensure_ascii=False);
+        return str(json.dumps(u.__dict__, ensure_ascii=False));
     return str(json.dumps(User(url=url).__dict__, ensure_ascii=False))
 
 # this soup is about each floor ....            

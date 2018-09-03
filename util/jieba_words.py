@@ -11,10 +11,11 @@ from scipy.misc import imread
 from wordcloud.wordcloud import WordCloud
 import uuid
 import os
-
-global jiebaSource
+import platform
+import threading
 
 def init():
+    global jiebaSource
     jiebaSource = os.getcwd()
     jieba.load_userdict(jiebaSource + '/jieba_dict')
     
@@ -27,21 +28,30 @@ def analysisContent(content):
     
 def analysisWords(content):
     return pseg.cut(content)
-   
+
+def __create__(text,pic_path):
+    if str(platform.system()).lower() == 'windows':
+        font_path = 'C:/Windows/Fonts/STFANGSO.ttf'
+    else:
+        font_path = '/usr/share/fonts/win/msyh.ttf'
+    mask = imread(jiebaSource+'/back.jpg')  # 读取背景图片
+    wordcloud = WordCloud(
+                mask=mask,
+                background_color='white',
+                max_font_size=240,
+                random_state=180,
+                font_path=font_path).generate(text)
+    wordcloud.to_file(pic_path)
     
-def createWordCloud(contents):
+def createWordCloud(contents,lazy=True):
     word_list = [" ".join(jieba.cut(sentence)) for sentence in contents]
     new_text = ' '.join(word_list)
-    coloring = imread(jiebaSource+'/back.jpg')  # 读取背景图片
     uuid_1 = uuid.uuid1()
     result_pic = str(uuid_1) + '.png'
-    fontname = '/usr/share/fonts/win/msyh.ttf'
-    wordcloud = WordCloud(
-        mask=coloring,
-        background_color='white',
-        max_font_size=240,
-        random_state=180,
-        font_path=fontname).generate(new_text)
-    wordcloud.to_file(result_pic)
+    if lazy:
+        t = threading.Thread(target=__create__,args=(new_text, result_pic,))
+        t.start()
+    else:
+        __create__(new_text, result_pic) 
     return os.path.abspath(result_pic)
 
