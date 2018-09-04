@@ -15,9 +15,10 @@ baidu_base_url = 'https://tieba.baidu.com'
 
 class User():
 
-    def __init__(self, name=None, url=None, sex=None, tbAge=None, tbTitleCount=None):
+    def __init__(self, name=None, head=None, url=None, sex=None, tbAge=None, tbTitleCount=None):
         self.name = name if name else ''
         self.sex = sex if sex else ''
+        self.head = head if head else ''
         self.url = url
         self.tbAge = tbAge if tbAge else ''
         self.tbTitleCount = tbTitleCount if tbTitleCount else ''
@@ -38,6 +39,7 @@ class User():
         u['url'] = self.url
         u['tbAge'] = self.tbAge
         u['tbTitleCount'] = self.tbTitleCount
+        u['head'] = self.head
         return u
 
 
@@ -46,18 +48,26 @@ def parse_user(url):
     if not soup:
         return None
     userInfo = soup.find(name='div', attrs={'class':'userinfo_userdata'})
+    userinfo__head = soup.find(name='div', attrs={'id':'j_userhead'}) 
     if userInfo :
         sex = userInfo.find(name='span', attrs={'class':'userinfo_sex_male'})
         if sex:
             sex_ = 'male'
         else:
             sex_ = 'female'
+        try:
+            user_head = userinfo__head.find(name='img', attrs={'src':re.compile(r'http://?.*')})['src'];
+        except Exception as ex:
+            print(ex)
+            user_head = ''
+            
         name_ = re.findall(r'用户名:(.+?)<', str(userInfo))[0]
         age_ = re.findall(r'吧龄:(.+?)<', str(userInfo))[0]
         titles_ = re.findall(r'发贴:(.+?)<', str(userInfo))[0]
-        u = User(name_, url, sex_, age_, titles_)
+        u = User(name_, user_head, url, sex_, age_, titles_)
         return str(json.dumps(u.__dict__, ensure_ascii=False));
     return str(json.dumps(User(url=url).__dict__, ensure_ascii=False))
+
 
 # this soup is about each floor ....            
 def parse_user_and_content(soup):
