@@ -46,8 +46,7 @@ def __create__(text,pic_path):
 def createWordCloud(contents,lazy=True):
     word_list = [" ".join(jieba.cut(sentence)) for sentence in contents]
     new_text = ' '.join(word_list)
-    uuid_1 = uuid.uuid1()
-    result_pic = str(uuid_1) + '.png'
+    result_pic = str(uuid.uuid1()) + '.png'
     if lazy:
         t = threading.Thread(target=__create__,args=(new_text, result_pic,))
         t.start()
