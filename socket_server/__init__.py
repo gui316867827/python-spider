@@ -7,17 +7,19 @@ from spider import baiduTieba
 from util import jieba_words
 
 
-def baiduTiebaSpider(data):
+def baiduTiebaSpider(json_data):
     response_temp = {}
-    if data and re.match(r'^https?:/{2}\w.+$', data):
-        print('has got connect data:%s' % (data))
+    data = json.loads(json_data)
+    print(data)
+    if data and re.match(r'^https?:/{2}\w.+$', data['url']):
         startTime = int(time.time())
-        all_user_contents = baiduTieba.start(data)
+        all_user_contents = baiduTieba.start(data['url'])
         response_temp['status'] = 'success'
         response_temp['data'] = all_user_contents
         contents = []
         for content_list in all_user_contents.values():
             contents += content_list
+        response_temp['frequency_count'] = jieba_words.analysisWords(contents)
         try:
             response_temp['picPath'] = jieba_words.createWordCloud(contents)
         except Exception as ex:

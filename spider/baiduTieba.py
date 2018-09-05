@@ -71,8 +71,8 @@ def parse_user(url):
 
 # this soup is about each floor ....            
 def parse_user_and_content(soup):
-    user_url = soup.find_all('a', attrs={'href':re.compile(r'^/home/main/?.*')})[0]
-    content = soup.find_all('div', attrs={'id':re.compile(r'post_content_?.*')})[0]
+    user_url = soup.find('a', attrs={'href':re.compile(r'^/home/main/?.*')})
+    content = soup.find('div', attrs={'id':re.compile(r'post_content_?.*')})
     return parse_user(baidu_base_url + user_url['href']), content.text.strip()
 
 
