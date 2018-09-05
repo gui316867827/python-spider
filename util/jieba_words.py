@@ -42,11 +42,11 @@ def analysisWords(contents):
     c = Counter()
     result_dict = {}
     for (k, v) in seg_list:
-        if len(k) > 0 and k != '\t' and k != '\n':
+        if len(k) > 0 and k != '\t' and k != '\n' and v != 'x':
             c[k] += 1
     for (k, v) in c.most_common(20):
         result_dict[k] = v
-    return json.dumps(result_dict)
+    return json.dumps(result_dict, ensure_ascii=False)
 
 
 def __create__(text, pic_path):
