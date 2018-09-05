@@ -60,7 +60,6 @@ def parse_user(url):
         except Exception as ex:
             print(ex)
             user_head = ''
-            
         name_ = re.findall(r'用户名:(.+?)<', str(userInfo))[0]
         age_ = re.findall(r'吧龄:(.+?)<', str(userInfo))[0]
         titles_ = re.findall(r'发贴:(.+?)<', str(userInfo))[0]
@@ -110,9 +109,12 @@ def get_all_pages(base_url):
 # pool 
 def parse_all_conteng(pages):
     lock.acquire()
-    page = pages.pop()
+    page = None
+    while(len(pages) > 0):
+        page = pages.pop()
     lock.release()
-    parse_content_soup(page)
+    if page:
+        parse_content_soup(page)
 
 
 def start(base_url):

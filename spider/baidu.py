@@ -11,7 +11,6 @@ from time import sleep
 from spider import driver
 import io
 
-
 class baiduDriver(driver):
     xiangqin_bar = 'https://tieba.baidu.com/f?kw=%E7%9B%B8%E4%BA%B2&ie=utf-8'
 

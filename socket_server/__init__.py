@@ -3,17 +3,23 @@ import time
 import json
 import re
 import jieba
-from spider import baiduTieba
 from util import jieba_words
 
 
-def baiduTiebaSpider(json_data):
+def spider_stater(json_data):
     response_temp = {}
     data = json.loads(json_data)
-    print(data)
+    try:
+        module_name = 'spider.' + data['actionType']
+        spider_runner = __import__(module_name, fromlist=True)
+    except Exception as ex:
+        print(ex)
+        response_temp['status'] = 'error'
+        response_temp['message'] = 'spider error, cause request data:' + data
+        return response_temp
     if data and re.match(r'^https?:/{2}\w.+$', data['url']):
         startTime = int(time.time())
-        all_user_contents = baiduTieba.start(data['url'])
+        all_user_contents = spider_runner.start(data['url'])
         response_temp['status'] = 'success'
         response_temp['data'] = all_user_contents
         contents = []
@@ -27,7 +33,7 @@ def baiduTiebaSpider(json_data):
         print('spider end !!!  has cost %ds' % (int(time.time()) - startTime))
     else :
         response_temp['status'] = 'error'
-        response_temp['message'] = 'spider error, cause request url:' + data
+        response_temp['message'] = 'spider error, cause request data:' + data
     return response_temp
 
 
@@ -49,7 +55,7 @@ class server():
             conn, client_address = self.sk.accept()
             print('client_address:%s' % (str(client_address)))
             data = str(conn.recv(1024), encoding='utf8')
-            conn.send(bytes(str(json.dumps(baiduTiebaSpider(data), ensure_ascii=False)), encoding="utf8"))
+            conn.send(bytes(str(json.dumps(spider_stater(data), ensure_ascii=False)), encoding="utf8"))
             conn.close()
     
     

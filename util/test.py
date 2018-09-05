@@ -13,6 +13,10 @@ def test_dict():
     temp['data'] = list_
     print(json.dumps(temp))
 
+def testJson():
+    s = '{flag:all,data:1111}'
+    loads = json.loads(s)
+    print(loads['flag'])
 
 if __name__ == '__main__':
-    print(platform.system())
+    testJson()
