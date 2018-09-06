@@ -30,7 +30,14 @@ class thread_manager():
             t.join()
 
 
-def get_data(url, headers={}):
+def assert_data(func, *args):
+    try:
+        return func(*args)
+    except Exception as ex:
+        print(ex)
+
+
+def get_data(url, headers={}, encoding='utf8'):
     time = 0
     while(True):
         if time > 10:
@@ -38,33 +45,35 @@ def get_data(url, headers={}):
         try:
             resp = requests.request(method='GET', url=url, headers=headers, timeout=2)
             if resp.status_code == 200:
+                resp.encoding = encoding
                 return resp.text
             else:
                 time += 1
                 print('try to connect to url:\'%s\' for %d times...response_code:%d...' % (url, time, resp.status_code))
-        except Exception as ex:
+        except:
             time += 1
             print('try to connect to url:\'%s\' for %d times' % (url, time))
-            print('get_soup:' + str(ex))
 
-            
+                     
 def get_soup(url, parser='html.parser', headers={}):
-    data = get_data(url, headers)
-    if data: 
-        return BeautifulSoup(data, parser)
+    try:
+        return BeautifulSoup(get_data(url, headers), parser)
+    except Exception as ex:
+        print(ex)
+
+
+if __name__ == '__main__':
+    print(get_soup('https://www.baidu.com'))
 
 
 def get_json(url, callback, headers={}):
     data = get_data(url, headers)
     if not data:
         return
-    try:
-        if callback:
-            return json.loads(data.replace(callback + '(', '', 1)[:-1])
-        else:
-            return json.loads(data)
-    except Exception as ex:
-        print(ex)
+    if callback:
+        return assert_data(json.loads, (data.replace(callback + '(', '', 1)[:-1]))
+    else:
+        return assert_data(json.loads, (data))
 
 
 class driver():
