@@ -60,7 +60,7 @@ def get_json(url, callback, headers={}):
         return
     try:
         if callback:
-            return json.loads(data.replace(callback, '', 1)[:-1])
+            return json.loads(data.replace(callback + '(', '', 1)[:-1])
         else:
             return json.loads(data)
     except Exception as ex:
