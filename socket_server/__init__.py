@@ -4,6 +4,7 @@ import json
 import re
 import jieba
 from util import jieba_words
+import threading
 
 
 def create_success_response():
@@ -63,8 +64,12 @@ class server():
             conn, client_address = self.sk.accept()
             print('client_address:%s' % (str(client_address)))
             data = str(conn.recv(1024), encoding='utf8')
-            conn.send(bytes(str(json.dumps(spider_runner(data), ensure_ascii=False)), encoding="utf8"))
-            conn.close()
+            t = threading.Thread(target=self.multipart_request, args=(conn, data))
+            t.start()
+    
+    def multipart_request(self, conn, data):
+        conn.send(bytes(str(json.dumps(spider_runner(data), ensure_ascii=False)), encoding="utf8"))
+        conn.close()
     
     
 if __name__ == '__main__':
