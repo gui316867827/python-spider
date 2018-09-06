@@ -27,15 +27,20 @@ def analysisContent(content):
     extract_tags = analyse.extract_tags(sentence=content, topK=10, withWeight=True, allowPOS=('ns', 'n', 'vn', 'v', 'nr'), withFlag=True)
     for tag in extract_tags:
         print(tag)
-
-
+        
 def parse_word_list(contents):
     if type(contents) is list:
         return ' '.join(contents)
     else:
         return contents
 
-
+    
+def parse_words(sentence):
+    jieba.load_userdict('jieba_dict')
+    seg_list = pseg.cut(sentence)
+    for (k, v) in seg_list:
+        print(str(k) + '---' + str(v))
+    
 def analysisWords(contents):
     content = parse_word_list(contents)
     seg_list = pseg.cut(content)
@@ -48,6 +53,11 @@ def analysisWords(contents):
         result_dict[k] = v
     return json.dumps(result_dict, ensure_ascii=False)
 
+if __name__ == '__main__':
+    f = open('content.txt','r',encoding='utf8')
+    content = f.read()
+    result = analysisWords(content)
+    print(str(result))
 
 def __create__(text, pic_path):
     if str(platform.system()).lower() == 'windows':
@@ -76,5 +86,5 @@ def createWordCloud(contents, lazy=True):
     return os.path.abspath(result_pic)
 
 
-if __name__ == '__main__':
-    analysisWords('楼主天天看吧里大家的相亲经历，也来分享一下自己的相亲经历吧。由于事情已经过去一段时间了，肯定没有当时的聊天记录了。相亲女的照片大多我都删了，如果大家想看，我在电脑里找找，能发就发一下。')
+
+    #analysisWords('楼主天天看吧里大家的相亲经历，也来分享一下自己的相亲经历吧。由于事情已经过去一段时间了，肯定没有当时的聊天记录了。相亲女的照片大多我都删了，如果大家想看，我在电脑里找找，能发就发一下。')
