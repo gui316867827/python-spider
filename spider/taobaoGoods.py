@@ -15,11 +15,8 @@ Created on Sep 5, 2018
 '''
 
 
-
-
-
 # every arr has 44 shops
-def get_each_arr_shops():
+def get_each_arr_shops(sear):
     pass
 
 
