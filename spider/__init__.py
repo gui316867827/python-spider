@@ -49,15 +49,20 @@ def get_data(url, headers={}):
 
             
 def get_soup(url, parser='html.parser', headers={}):
-    return BeautifulSoup(get_data(url, headers), parser)
+    data = get_data(url, headers)
+    if data: 
+        return BeautifulSoup(data, parser)
 
 
 def get_json(url, callback, headers={}):
+    data = get_data(url, headers)
+    if not data:
+        return
     try:
         if callback:
-            return json.loads(get_data(url, headers).replace(callback, '', 1)[:-1])
+            return json.loads(data.replace(callback, '', 1)[:-1])
         else:
-            return json.loads(get_data(url, headers))
+            return json.loads(data)
     except Exception as ex:
         print(ex)
 
