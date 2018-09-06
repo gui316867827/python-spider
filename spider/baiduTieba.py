@@ -99,8 +99,7 @@ def get_all_pages(base_url):
     pages = []
     pages.append(base_url)
     try:
-        for i in range(2, int(re.findall(r'.*pn=(\d+)', childrens[len(childrens) - 1]['href'])[0]) + 1):
-            pages.append(base_url + '?pn=' + str(i))
+        [pages.append(base_url + '?pn=' + str(i)) for i in range(2, int(re.findall(r'.*pn=(\d+)', childrens[len(childrens) - 1]['href'])[0]) + 1)]
     except Exception as ex:
         print('get_all_pages:' + str(ex))
     return pages

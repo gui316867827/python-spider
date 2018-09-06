@@ -30,7 +30,7 @@ class thread_manager():
             t.join()
 
 
-def get_soup(url, parser='html.parser', headers={}):
+def get_data(url, headers={}):
     time = 0
     while(True):
         if time > 10:
@@ -38,7 +38,7 @@ def get_soup(url, parser='html.parser', headers={}):
         try:
             resp = requests.request(method='GET', url=url, headers=headers, timeout=2)
             if resp.status_code == 200:
-                return BeautifulSoup(resp.text, parser)
+                return resp.text
             else:
                 time += 1
                 print('try to connect to url:\'%s\' for %d times...response_code:%d...' % (url, time, resp.status_code))
@@ -46,6 +46,20 @@ def get_soup(url, parser='html.parser', headers={}):
             time += 1
             print('try to connect to url:\'%s\' for %d times' % (url, time))
             print('get_soup:' + str(ex))
+
+            
+def get_soup(url, parser='html.parser', headers={}):
+    return BeautifulSoup(get_data(url, headers), parser)
+
+
+def get_json(url, callback, headers={}):
+    try:
+        if callback:
+            return json.loads(get_data(url, headers).replace(callback, '', 1)[:-1])
+        else:
+            return json.loads(get_data(url, headers))
+    except Exception as ex:
+        print(ex)
 
 
 class driver():

@@ -6,19 +6,29 @@ Created on Sep 5, 2018
 
 '''
     start page
-    https://s.taobao.com/search?q=%E6%96%87%E8%83%B8&bcoffset=-27&ntoffset=-27&p4ppushleft=1%2C48&s={pagenum*44}  pagenum >=0 && pagenum <=100
+    https://s.taobao.com/search?data-value=88&ajax=true&callback=jsonp1077&q=%E6%96%87%E8%83%B8
 '''
 
 '''
     comments
     
 '''
+base_url = 'https://s.taobao.com/search?data-value={pageNum}&ajax=true&callback=jsonp1077&q={search_data}'
 
 
-# every arr has 44 shops
-def get_each_arr_shops(sear):
+def get_one_arr_shops():
     pass
 
+# all pages of each 44 shops
+def get_all_arr_shops(search_data):
+    url = base_url.replace('{search_data}', search_data)
+    return [url.replace('{pageNum}', str(44 * i)) for i in range(100)]
 
 def start(searchdata):
     pass
+
+
+if __name__ == '__main__':
+    for i in get_all_arr_shops('%E6%96%87%E8%83%B8'):
+        print(i)
+    
