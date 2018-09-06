@@ -20,3 +20,8 @@ def testJson():
 
 if __name__ == '__main__':
     testJson()
+def get_cpu_count():
+    from multiprocessing import cpu_count
+    print(cpu_count())
+if __name__ == '__main__':
+    get_cpu_count()

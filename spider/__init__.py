@@ -9,10 +9,28 @@ import sys
 import json
 import requests
 from bs4 import BeautifulSoup
+from multiprocessing import cpu_count
+import threading
 
-headers ={}
 
-def get_soup(url, parser='html.parser'):
+class thread_manager():
+
+    def __init__(self, target, args, poolsize=None):
+        if not target:
+            raise RuntimeError('target can not be None!!!')
+        size = poolsize if poolsize else cpu_count()
+        self.thread_list = [threading.Thread(target=target, args=args) for t in range(size)]  # @UnusedVariable
+
+    def run(self):
+        for t in self.thread_list:
+            t.start()
+
+    def wait(self):
+        for t in self.thread_list:
+            t.join()
+
+
+def get_soup(url, parser='html.parser', headers={}):
     time = 0
     while(True):
         if time > 10:
@@ -28,7 +46,6 @@ def get_soup(url, parser='html.parser'):
             time += 1
             print('try to connect to url:\'%s\' for %d times' % (url, time))
             print('get_soup:' + str(ex))
-
 
 
 class driver():
@@ -59,8 +76,9 @@ class driver():
             self.__wait__(by, value)
         return self.browser.find_element(by, value)
 
+
 class staticSource():
     
-    def __init__(self,pageSource):
+    def __init__(self, pageSource):
         self.soup = get_soup(pageSource)
         

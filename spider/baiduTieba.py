@@ -6,7 +6,7 @@ Created on Aug 31, 2018
 import re
 import threading
 import json
-from spider import get_soup
+from spider import get_soup, thread_manager
 
 headers = {}
 
@@ -107,7 +107,7 @@ def get_all_pages(base_url):
 
 
 # pool 
-def parse_all_conteng(pages):
+def parse_all_content(pages):
     lock.acquire()
     page = None
     while(len(pages) > 0):
@@ -124,9 +124,7 @@ def start(base_url):
     all_user_contents = {}
     lock = threading.Lock()
     all_pages = get_all_pages(base_url)
-    thread_list = [threading.Thread(target=parse_all_conteng, args=(all_pages,)) for t in range(8)]
-    for t in thread_list:
-        t.start()
-    for t in thread_list:
-        t.join()
+    t_manager = thread_manager(target=parse_all_content, args=(all_pages,))
+    t_manager.run()
+    t_manager.wait()
     return all_user_contents
