@@ -13,6 +13,8 @@ def test_dict():
     temp['data'] = list_
     print(json.dumps(temp))
 
-
+def get_cpu_count():
+    from multiprocessing import cpu_count
+    print(cpu_count())
 if __name__ == '__main__':
-    print(platform.system())
+    get_cpu_count()
