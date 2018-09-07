@@ -56,7 +56,7 @@ class server():
         self.re_compire = re.compile('https://tieba.baidu.com/p/\/d')
         self.sk = socket.socket()
         self.sk.bind((address, port))
-        self.sk.listen(5)
+        self.sk.listen(10)
         self.init_source()
 
     def start(self):

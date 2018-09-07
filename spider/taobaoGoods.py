@@ -3,6 +3,7 @@ Created on Sep 5, 2018
 
 @author: F-Monkey
 '''
+from spider import get_json
 
 '''
     start page
@@ -13,16 +14,18 @@ Created on Sep 5, 2018
     comments
     
 '''
-base_url = 'https://s.taobao.com/search?data-value={pageNum}&ajax=true&callback=jsonp1077&q={search_data}'
+base_url = 'https://s.taobao.com/search?data-value={pageNum}&ajax=true&callback={callback}&q={search_data}'
+call_back = 'jsonp1077'
 
-
-def get_one_arr_shops():
-    pass
+    
+def get_one_arr_shops(arr_page):
+    _json = get_json(arr_page, callback=call_back)
 
 # all pages of each 44 shops
 def get_all_arr_shops(search_data):
-    url = base_url.replace('{search_data}', search_data)
+    url = base_url.replace('{search_data}', search_data).replace('{callback}', call_back);
     return [url.replace('{pageNum}', str(44 * i)) for i in range(100)]
+
 
 def start(searchdata):
     pass

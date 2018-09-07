@@ -124,6 +124,6 @@ def start(base_url):
     lock = threading.Lock()
     all_pages = get_all_pages(base_url)
     t_manager = thread_manager(target=parse_all_content, args=(all_pages,))
-    t_manager.run()
+    t_manager.start()
     t_manager.wait()
     return all_user_contents

@@ -19,15 +19,42 @@ class thread_manager():
         if not target:
             raise RuntimeError('target can not be None!!!')
         size = poolsize if poolsize else cpu_count()
-        self.thread_list = [threading.Thread(target=target, args=args) for t in range(size)]  # @UnusedVariable
+        self.thread_list = [MyThread(func=target, args=args) for t in range(size)]  # @UnusedVariable
 
-    def run(self):
+    def start(self):
         for t in self.thread_list:
             t.start()
 
     def wait(self):
         for t in self.thread_list:
             t.join()
+            
+    def get_results(self):
+        results = []
+        for t in self.thread_list:
+            result = t.get_result()
+            if type(result) == list:
+                results.extend(result)
+            else:
+                results.append(result)
+        return results
+
+        
+class MyThread(threading.Thread):
+
+    def __init__(self, func, args=()):
+        super(MyThread, self).__init__()
+        self.func = func
+        self.args = args
+
+    def run(self):
+        self.result = self.func(*self.args)
+
+    def get_result(self):
+        try:
+            return self.result  # 如果子线程不使用join方法，此处可能会报没有self.result的错误
+        except Exception:
+            return None
 
 
 def assert_data(func, *args):
@@ -41,6 +68,7 @@ def get_data(url, headers={}, encoding='utf8'):
     time = 0
     while(True):
         if time > 10:
+            print('abandon to connect to url....%s' % (url))
             return
         try:
             resp = requests.request(method='GET', url=url, headers=headers, timeout=2)
@@ -71,7 +99,8 @@ def get_json(url, callback, headers={}):
     if not data:
         return
     if callback:
-        return assert_data(json.loads, (data.replace(callback + '(', '', 1)[:-1]))
+        index = -2 if data[-1] == ';' else -1
+        return assert_data(json.loads, (data.replace(callback + '(', '', 1)[:index]))
     else:
         return assert_data(json.loads, (data))
 
