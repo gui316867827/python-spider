@@ -39,7 +39,10 @@ def trim_json():
     print(len(json_['data']['auctions']))
     for k in json_['data']['auctions']:
         print(k['nick'] + '---' + k['nid'] + '---' + k['user_id'])
-    
+
+
+def trim_json_1():
+        
     
     '''
     index = -2 if data[-1] == ';' else -1
