@@ -133,7 +133,10 @@ class driver():
             self.__wait__(by, value)
         return self.browser.find_element(by, value)
 
-
+    def get_page_source(self):
+        return self.browser.page_source
+    
+    
 class staticSource():
     
     def __init__(self, pageSource):

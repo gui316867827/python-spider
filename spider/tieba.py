@@ -19,8 +19,8 @@ class tieba(driver):
         username_id = 'TANGRAM__PSP_10__userName'
         password_id = 'TANGRAM__PSP_10__password'
         submit_id = 'TANGRAM__PSP_10__submit'
-        self.find(By.ID, username_id).send_keys('18855952265')
-        self.find(By.ID, password_id, False).send_keys('tjf546019')
+        self.find(By.ID, username_id).send_keys('')
+        self.find(By.ID, password_id, False).send_keys('')
         self.find(By.ID, submit_id, False).click()
         send_msg_ID = 'TANGRAM__36__button_send_mobile'
         self.find(By.ID, send_msg_ID).click()
