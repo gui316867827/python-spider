@@ -5,6 +5,10 @@ import os
 import json
 import platform
 import re
+from spider.baidu import analysisPic
+from PIL import Image
+from pytesseract.pytesseract import image_to_string
+import pytesseract
 
 
 def test_dict():
@@ -49,7 +53,17 @@ def trim_json_1():
     data = data.replace(callback + '(', '', 1)[:index]
     print(json.loads(data))
     '''
+def trans_str(s):
+    return s.replace('=','').replace('?','').replace('x','*')
 
-
+def str_arithmetic(s):
+    s = trans_str(s)
+    print(s)
+    a = eval(s)
+    print (a)
+    
 if __name__ == '__main__':
-    trim_json()
+    path = os.getcwd() + '/test.jpg'
+    s = analysisPic(path)
+    str_arithmetic(s)
+    

@@ -117,6 +117,8 @@ def parse_all_content(pages):
 
 
 def start(base_url):
+    if not re.match(r'^https?:/{2}\w.+$', base_url):
+        return
     global all_user_contents
     global lock
     headers['Referer'] = base_url

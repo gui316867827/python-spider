@@ -27,7 +27,7 @@ def spider_runner(json_data):
     except Exception as ex:
         print(ex)
         return create_error_response(data)
-    if data and re.match(r'^https?:/{2}\w.+$', data['url']):
+    if data:
         startTime = int(time.time())
         all_user_contents = runner.start(data['url'])
         response_temp = create_success_response()

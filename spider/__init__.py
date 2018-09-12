@@ -83,7 +83,7 @@ def get_data(url, headers={}, encoding='utf8'):
             print('try to connect to url:\'%s\' for %d times' % (url, time))
 
                      
-def get_soup(url, parser='html.parser', headers={}):
+def get_soup(url, parser='lxml', headers={}):
     try:
         return BeautifulSoup(get_data(url, headers), parser)
     except Exception as ex:

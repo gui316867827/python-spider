@@ -21,6 +21,7 @@ base_url = 'https://s.taobao.com/search?data-value={pageNum}&ajax=true&callback=
 call_back = 'jsonp1077'
 
 
+
 def parse_one_arr_shops(one_page):
     data = get_data(one_page)
     data = re.findall(r'"itemlist":(.+?),"bottomsearch"', data)[0]
@@ -32,12 +33,12 @@ def parse_one_arr_shops(one_page):
     
     
 def get_one_arr_shops(all_arr_shops_page):
+    lock.acquire()
     while len(all_arr_shops_page) > 0:
-        lock.acquire()
         each_page = all_arr_shops_page.pop()
-        lock.release()
-        if each_page:
-            assert_data(parse_one_arr_shops, each_page)
+    lock.release()
+    if each_page:
+        assert_data(parse_one_arr_shops, each_page)
     
 
 # all pages of each 44 shops
@@ -52,9 +53,9 @@ def start(search_data):
     global all_arr_shops
     all_arr_shops = []
     lock = threading.Lock()
-    
+    get_all_arr_shops(search_data)
     pass
-
+    
 
 if __name__ == '__main__':
     for i in get_all_arr_shops('%E6%96%87%E8%83%B8'):

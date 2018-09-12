@@ -10,6 +10,7 @@ from PIL import Image
 from time import sleep
 from spider import driver
 import io
+import pytesseract
 
 class baiduDriver(driver):
     xiangqin_bar = 'https://tieba.baidu.com/f?kw=%E7%9B%B8%E4%BA%B2&ie=utf-8'
@@ -64,7 +65,9 @@ def analysisPic(img_path):
     response = requests.get(img_path)
     im = Image.open(BytesIO(response.content))
     '''
+    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files (x86)\Tesseract-OCR\tesseract.exe'
     im = Image.open(img_path)
+    '''
     # 图片去边
     width = im.size[0]
     height = im.size[1]
@@ -75,11 +78,11 @@ def analysisPic(img_path):
     box = (int(left), int(top), int(right), int(bottom))
     im = im.crop(box)
     im = im.resize((width * 4, height * 4), Image.BILINEAR)
-    im.save('demo.png')
+#     im.save('demo.png')
     
     # 图片灰度处理
     imgray = im.convert('L')
-    imgray.save('demo_gray.png')
+#     imgray.save('demo_gray.png')
     
     # 图片降噪
     threshold = 150
@@ -90,9 +93,11 @@ def analysisPic(img_path):
         else: 
             table.append(1) 
     out = imgray.point(table, '1')
-    out.save('demo_threshold.png')
-    # 识别
-    print(image_to_string(out, 'chi_sim'))
+    '''
+#     out.save('demo_threshold.png')
+    s = image_to_string(im)
+    print(s)
+    return s
 
 
 if __name__ == '__main__':
