@@ -93,15 +93,18 @@ def parse_content_soup(url):
 # get each page
 def get_all_pages(base_url):
     soup = get_soup(base_url)
+    if not soup:
+        return
     childrens = []
     [childrens.append(child) for child in soup.find(name='li', class_='pager_theme_4').children]
     childrens = list(filter(lambda x:str(x) != '\n' and str(x).__contains__('href') , childrens))
     pages = []
     pages.append(base_url)
     try:
-        [pages.append(base_url + '?pn=' + str(i)) for i in range(2, int(re.findall(r'.*pn=(\d+)', childrens[len(childrens) - 1]['href'])[0]) + 1)]
+        if(len(childrens) > 2):
+            [pages.append(base_url + '?pn=' + str(i)) for i in range(2, int(re.findall(r'.*pn=(\d+)', childrens[len(childrens) - 1]['href'])[0]) + 1)]
     except Exception as ex:
-        print('get_all_pages:' + str(ex))
+        print('get_all_pages...exception:{} base_url:{}'.format(str(ex),base_url))
     return pages
 
 
@@ -115,17 +118,29 @@ def parse_all_content(pages):
     if page:
         parse_content_soup(page)
 
+def get_all_pages_(page_count = 50):
+    root_url = 'https://tieba.baidu.com/f?kw=%E7%9B%B8%E4%BA%B2&ie=utf-8&pn='
+    pages = []
+    for url in  [root_url+str(i) for i in range(page_count)] :
+        soup = get_soup(url)
+        pages.extend([baidu_base_url+ a['href'] for a in soup.findAll('a',attrs={'href':re.compile(r'^/p/\d{10}')})])
+    return pages
 
-def start(base_url):
-    if not re.match(r'^https?:/{2}\w.+$', base_url):
-        return
+def start(args):
+#     if not re.match(r'^https?:/{2}\w.+$', base_url):
+#         return
     global all_user_contents
     global lock
-    headers['Referer'] = base_url
     all_user_contents = {}
     lock = threading.Lock()
-    all_pages = get_all_pages(base_url)
+    all_pages = []
+    for base_url in get_all_pages_():
+        all_pages.extend(get_all_pages(base_url))
     t_manager = thread_manager(target=parse_all_content, args=(all_pages,))
     t_manager.start()
     t_manager.wait()
     return all_user_contents
+
+if __name__ == '__main__':
+    for page in get_all_pages_():
+        print(page)

@@ -3,7 +3,7 @@ Created on Sep 5, 2018
 
 @author: F-Monkey
 '''
-from spider import get_json, get_data, assert_data
+from spider import get_data, assert_data
 import threading
 import re
 import json
@@ -26,6 +26,7 @@ def parse_one_arr_shops(one_page):
     data = get_data(one_page)
     data = re.findall(r'"itemlist":(.+?),"bottomsearch"', data)[0]
     data = data.replace('class="icon-text-1111-stock"', 'class=\'icon-text-1111-stock\'')
+    
     json_ = json.loads(data)
     shop_item = json_['data']['auctions']
     for shop in shop_item:

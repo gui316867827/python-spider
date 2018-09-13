@@ -9,6 +9,7 @@ from spider.baidu import analysisPic
 from PIL import Image
 from pytesseract.pytesseract import image_to_string
 import pytesseract
+from _io import StringIO
 
 
 def test_dict():
@@ -39,7 +40,7 @@ def trim_json():
     callback = 'jsonp1077'
     data = re.findall(r'"itemlist":(.+?),"bottomsearch"', data)[0]
     data = data.replace('class="icon-text-1111-stock"', 'class=\'icon-text-1111-stock\'')
-    json_ = json.loads(data)
+    json_ = json.load(StringIO(data))
     print(len(json_['data']['auctions']))
     for k in json_['data']['auctions']:
         print(k['nick'] + '---' + k['nid'] + '---' + k['user_id'])
@@ -63,7 +64,5 @@ def str_arithmetic(s):
     print (a)
     
 if __name__ == '__main__':
-    path = os.getcwd() + '/test.jpg'
-    s = analysisPic(path)
-    str_arithmetic(s)
+    trim_json()
     

@@ -15,7 +15,7 @@ import pytesseract
 class baiduDriver(driver):
     xiangqin_bar = 'https://tieba.baidu.com/f?kw=%E7%9B%B8%E4%BA%B2&ie=utf-8'
 
-    def __init__(self, headless=True, waitTime=None, waitFrequency=None, forbidden_pic=False, forbidden_js=False):
+    def __init__(self, headless=False, waitTime=None, waitFrequency=None, forbidden_pic=False, forbidden_js=False):
         driver.__init__(self, headless=headless, waitTime=waitTime, waitFrequency=waitFrequency, forbidden_pic=forbidden_pic, forbidden_js=forbidden_js)
         self.browser.get(self.xiangqin_bar)
         self._login_()
@@ -36,6 +36,7 @@ class baiduDriver(driver):
         self._save_img()
 
     def _save_img(self):
+        print('save.....')
         verifyCodeImg_id = 'TANGRAM__PSP_11__verifyCodeImg'
         img = self.find(By.ID, verifyCodeImg_id, need_wait=True)
         img_src = ''
@@ -57,7 +58,9 @@ class baiduDriver(driver):
         im = im.crop((left, top, right, bottom))
         filename = 'demo.png'
         im.save(filename)
+        print('save end...')
         analysisPic(filename)
+        self.browser.quit()
 
 
 def analysisPic(img_path):
@@ -67,7 +70,6 @@ def analysisPic(img_path):
     '''
     pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files (x86)\Tesseract-OCR\tesseract.exe'
     im = Image.open(img_path)
-    '''
     # 图片去边
     width = im.size[0]
     height = im.size[1]
@@ -93,9 +95,8 @@ def analysisPic(img_path):
         else: 
             table.append(1) 
     out = imgray.point(table, '1')
-    '''
 #     out.save('demo_threshold.png')
-    s = image_to_string(im)
+    s = image_to_string(imgray)
     print(s)
     return s
 
