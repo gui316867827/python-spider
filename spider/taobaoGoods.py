@@ -20,6 +20,19 @@ import time
 '''
 
 
+# countent
+# style size
+def parse_auctionSku(rateContent, auctionSku):
+    data = {}
+    data['rateContent'] = rateContent
+    ss = auctionSku.split(';')
+    style = ss[0].split(':')[1] 
+    size = ss[1].split(':')[1]
+    data['color'] = style
+    data['size'] = size
+    return data
+
+
 class content():
     content_base_url = 'https://rate.tmall.com/list_detail_rate.htm?itemId={nid}&sellerId={user_id}&currentPage={num}'
     nick_urls = {}
@@ -42,23 +55,22 @@ class content():
     def __get_content__(self, nick, data):
         json_ = json.loads(data.replace(r'jsonp128(', '')[:-2 if data[:-1] == ',' else -1])
         for rate in json_['rateDetail']['rateList']:
-            rateContent = rate['rateContent']  # countent
-            auctionSku = rate['auctionSku']  # size style
             self.lock.acquire()
+            d = parse_auctionSku(rate['rateContent'], rate['auctionSku'])
             if self.nick_rate_msg.__contains__(nick):
                 # same content
-                if self.nick_rate_msg[nick].__contains__((rateContent, auctionSku)):
+                if self.nick_rate_msg[nick].__contains__(d):
+                    self.lock.release()
                     return
-                print(rateContent + '---' + auctionSku)
-                self.nick_rate_msg[nick].append((rateContent, auctionSku))
+                print(d)
+                self.nick_rate_msg[nick].append(d)
             else:
-                self.nick_rate_msg[nick] = [(rateContent, auctionSku)]
+                self.nick_rate_msg[nick] = [d]
             self.lock.release()
-
+    
     def __get_contents__(self, nick, url):
         pageNum = 0
         last_data = None
-        print('url ==========================' + url)
         while(True):
             data = get_data(url.replace('{num}', str(pageNum)))
             pageNum += 1
@@ -124,7 +136,7 @@ def start(search_data):
     s = shop(search_data)
     shops = s.start()
     c = content(shops)
-    c.start()
+    return c.start()
 
 
 if __name__ == '__main__':
