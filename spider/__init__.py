@@ -141,4 +141,11 @@ class staticSource():
     
     def __init__(self, pageSource):
         self.soup = get_soup(pageSource)
-        
+
+
+def wait_thread_executers(fun):
+    thread_list = [threading.Thread(target=fun) for t in range(8)]
+    for t in thread_list:
+        t.start()
+    for t in thread_list:
+        t.join()      

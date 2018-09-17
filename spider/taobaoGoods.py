@@ -35,28 +35,29 @@ def parse_auctionSku(rateContent, auctionSku):
 
 class content():
     content_base_url = 'https://rate.tmall.com/list_detail_rate.htm?itemId={nid}&sellerId={user_id}&currentPage={num}'
-    nick_urls = {}
     nick_rate_msg = {}
     
     def __init__(self, shops):
-        for (nick, nid, user_id) in shops:
-            shop_content_url = self.content_base_url.replace('{nid}', nid).replace('{user_id}', user_id)
-            if self.nick_urls.__contains__(nick):
-                self.nick_urls[nick].append(shop_content_url)
-            else:
-                self.nick_urls[nick] = [shop_content_url]
+        self.shops = shops
 
     def __get_content_of_shop__(self):
+        while len(self.shops) > 0:
+            nick, nid, user_id = self.shops.pop()
+            shop_content_url = self.content_base_url.replace('{nid}', nid).replace('{user_id}', user_id)
+            self.__get_contents__(nick, shop_content_url)
+        '''
+            self.shops_urls.append(shop_content_url)
         for nick in self.nick_urls:
-            urls = self.nick_urls.pop(nick)
+            urls = self.nick_urls[nick]
             for url in urls:
-                self.__get_contents__(nick, url)
-    
+        '''
+
     def __get_content__(self, nick, data):
         json_ = json.loads(data.replace(r'jsonp128(', '')[:-2 if data[:-1] == ',' else -1])
         for rate in json_['rateDetail']['rateList']:
             self.lock.acquire()
             d = parse_auctionSku(rate['rateContent'], rate['auctionSku'])
+            print(d)
             if self.nick_rate_msg.__contains__(nick):
                 # same content
                 if self.nick_rate_msg[nick].__contains__(d):
@@ -72,11 +73,19 @@ class content():
         pageNum = 0
         last_data = None
         while(True):
+            if pageNum > 70 :
+                break
             data = get_data(url.replace('{num}', str(pageNum)))
             pageNum += 1
-            if data and data != last_data:
+            if data:
+                if pageNum > 1:
+                    if last_data and data[:50] != last_data[:50]:
+                        self.__get_content__(nick, data)
+                    else:
+                        break
+                else:
+                    self.__get_content__(nick, data)
                 last_data = data
-                self.__get_content__(nick, data)
             else:
                 if data:
                     break
@@ -100,13 +109,12 @@ class shop():
 
     def __init__(self, goodsName):
         url = self.shops_base_url.replace('{search_data}', goodsName).replace('{callback}', self.call_back);
-        self.pages = [url.replace('{pageNum}', str(44 * i)) for i in range(100)]
+        self.pages_url = set([url.replace('{pageNum}', str(44 * i)) for i in range(100)])
     
     def __get_one_page_shops__(self):
-        self.lock.acquire()
         page = None
-        while len(self.pages) > 0:
-            page = self.pages.pop()
+        while len(self.pages_url) > 0:
+            page = self.pages_url.pop()
             if page:
                 data = get_data(page)
                 try:
@@ -115,28 +123,33 @@ class shop():
                     json_ = json.loads(data)
                     shop_item = json_['data']['auctions']
                     for shop in shop_item:
-                        self.__shops__.append((shop['nick'], shop['nid'], shop['user_id']))
+                        key = (shop['nick'], shop['nid'], shop['user_id'])
+                        if not self.__shops__.__contains__(key):
+                            self.lock.acquire()
+                            self.__shops__.append((shop['nick'], shop['nid'], shop['user_id']))
+                            self.lock.release()
                 except:
                     pass
-        self.lock.release()
     
     def start(self):
         self.lock = threading.Lock()
-        start_time = time.time()
         thread_list = [threading.Thread(target=self.__get_one_page_shops__) for t in range(8)]
         for t in thread_list:
             t.start()
         for t in thread_list:
             t.join()
-        print('has get %d shops.....cost %ds' % (len(self.__shops__), (time.time() - start_time)))
         return self.__shops__
 
     
 def start(search_data):
+    start_time = time.time()
     s = shop(search_data)
     shops = s.start()
+    print('has get %d shops.....cost %ds' % (len(shops), (time.time() - start_time)))
     c = content(shops)
-    return c.start()
+    cs = c.start()
+    print('has get %d contents.....cost %ds' % (len(cs), (time.time() - start_time)))
+    return cs
 
 
 if __name__ == '__main__':
