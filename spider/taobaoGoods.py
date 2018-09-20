@@ -9,19 +9,30 @@ import re
 import json
 import time
 
-'''
-    start page
-    https://s.taobao.com/search?data-value=88&ajax=true&callback=jsonp1077&q=%E6%96%87%E8%83%B8
-'''
 
-'''
-    comments
+class shop():
+
+    def __init__(self, nick, shopId, sellerId):
+        self.nick = nick
+        self.shopId = shopId
+        self.sellerId = sellerId
+
+    def __hash__(self):
+        return hash(self.nick + self.sellerId + self.shopId)
     
-'''
+    def __eq__(self, other):
+        if type(other) == shop:
+            return self.__hash__() == other.__hash__()
+        return False
 
+    def to_dict(self):
+        data = {}
+        data['nick'] = self.nick
+        data['shopId'] = self.shopId
+        data['sellerId'] = self.sellerId
+        return json.dumps(data)
 
-# countent
-# style size
+        
 def parse_auctionSku(rateContent, auctionSku):
     data = {}
     data['rateContent'] = rateContent
@@ -29,11 +40,12 @@ def parse_auctionSku(rateContent, auctionSku):
     style = ss[0].split(':')[1] 
     size = ss[1].split(':')[1]
     data['color'] = style
-    data['size'] = size
+    data['size'] = re.findall('(\d+)', size)[0]
+    data['cup'] = size.replace(data['size'], '')
     return data
 
 
-class content():
+class content_runner():
     content_base_url = 'https://rate.tmall.com/list_detail_rate.htm?itemId={nid}&sellerId={user_id}&currentPage={num}'
     nick_urls = {}
     nick_rate_msg = {}
@@ -41,34 +53,34 @@ class content():
     def __init__(self, shops):
         for (nick, nid, user_id) in shops:
             shop_content_url = self.content_base_url.replace('{nid}', nid).replace('{user_id}', user_id)
-            if self.nick_urls.__contains__(nick):
-                self.nick_urls[nick].append(shop_content_url)
+            s = shop(nick, nid, user_id)
+            if self.nick_urls.__contains__(s):
+                self.nick_urls[s].append(shop_content_url)
             else:
-                self.nick_urls[nick] = [shop_content_url]
+                self.nick_urls[s] = [shop_content_url]
 
     def __get_content_of_shop__(self):
-        for nick in self.nick_urls:
-            urls = self.nick_urls.pop(nick)
+        for s in self.nick_urls:
+            urls = self.nick_urls.pop(s)
             for url in urls:
-                self.__get_contents__(nick, url)
+                self.__get_contents__(s, url)
     
-    def __get_content__(self, nick, data):
+    def __get_content__(self, s, data):
         json_ = json.loads(data.replace(r'jsonp128(', '')[:-2 if data[:-1] == ',' else -1])
         for rate in json_['rateDetail']['rateList']:
             self.lock.acquire()
             d = parse_auctionSku(rate['rateContent'], rate['auctionSku'])
-            if self.nick_rate_msg.__contains__(nick):
+            if self.nick_rate_msg.__contains__(s):
                 # same content
-                if self.nick_rate_msg[nick].__contains__(d):
+                if self.nick_rate_msg[s].__contains__(d):
                     self.lock.release()
                     return
-                print(d)
-                self.nick_rate_msg[nick].append(d)
+                self.nick_rate_msg[s].append(d)
             else:
-                self.nick_rate_msg[nick] = [d]
+                self.nick_rate_msg[s] = [d]
             self.lock.release()
     
-    def __get_contents__(self, nick, url):
+    def __get_contents__(self, s, url):
         pageNum = 0
         last_data = None
         while(True):
@@ -78,7 +90,7 @@ class content():
             pageNum += 1
             if data and data != last_data:
                 last_data = data
-                self.__get_content__(nick, data)
+                self.__get_content__(s.to_dict(), data)
             else:
                 if data:
                     break
@@ -95,7 +107,7 @@ class content():
         return self.nick_rate_msg
 
         
-class shop():
+class shop_runner():
     shops_base_url = 'https://s.taobao.com/search?data-value={pageNum}&ajax=true&callback={callback}&q={search_data}'
     call_back = 'jsonp1077'
     __shops__ = []
@@ -132,16 +144,17 @@ class shop():
             t.start()
         for t in thread_list:
             t.join()
+        self.__shops__ = set(self.__shops__)
         print('has get %d shops.....cost %ds' % (len(self.__shops__), (time.time() - start_time)))
         return self.__shops__
 
     
 def start(search_data):
-    s = shop(search_data)
+    s = shop_runner(search_data)
     shops = s.start()
-    c = content(shops)
+    c = content_runner(shops)
     return c.start()
 
 
 if __name__ == '__main__':
-    start('%E6%96%87%E8%83%B8')
+    start('文胸')

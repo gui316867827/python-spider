@@ -23,23 +23,25 @@ def create_error_response(data):
 def spider_runner(json_data):
     data = json.loads(json_data)
     try:
-        runner = __import__('spider.' + data['actionType'], fromlist=True)
+        runner = __import__(data['actionType'], fromlist=True)
     except Exception as ex:
         print(ex)
         return create_error_response(data)
     if data:
         startTime = int(time.time())
-        all_user_contents = runner.start(data['url'])
+        all_user_contents = runner.start(data['data'])
         response_temp = create_success_response()
         response_temp['data'] = all_user_contents
-        contents = []
-        for content_list in all_user_contents.values():
-            contents += content_list
-        response_temp['frequency_count'] = jieba_words.analysisWords(contents)
-        try:
-            response_temp['picPath'] = jieba_words.createWordCloud(contents)
-        except Exception as ex:
-            print(ex)
+        if data['count'] == "true":
+            contents = []
+            for content_list in all_user_contents.values():
+                contents += content_list
+            response_temp['frequency_count'] = jieba_words.analysisWords(contents)
+            if data['createCloud']:
+                try:
+                    response_temp['picPath'] = jieba_words.createWordCloud(contents)
+                except Exception as ex:
+                    print(ex)
         print('spider end !!!  has cost %ds' % (int(time.time()) - startTime))
         return response_temp
     else :

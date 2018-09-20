@@ -7,6 +7,7 @@ import threading
 from spider import get_soup, wait_thread_executers
 import re
 import json
+import requests
 
 tieba_url = 'https://tieba.baidu.com/f?kw={data}&ie=utf-8&pn='
 baidu_base_url = 'https://tieba.baidu.com'
@@ -74,7 +75,7 @@ class User():
         return u
 
 
-class article():
+class article_runner():
     
     default_len = 50
     article_urls = []   
@@ -97,7 +98,7 @@ class article():
         return self.article_urls
 
 
-class content():
+class content_runner():
     all_user_contents = {}
 
     def __init__(self, articles):
@@ -146,21 +147,34 @@ class content():
         return self.all_user_contents
 
 
+def delete_article(url):
+    delete_url = 'https://tieba.baidu.com/f/commit/thread/delete'
+    data = {}
+    data['ie'] = 'utf-8'
+    data['tbs'] = '1215dda3bd311a991537426715'
+    data['kw'] = '相亲'
+    data['fid'] = '548416'
+    data['commit_fr'] = 'pb'
+    data['tid'] = re.findall(r'https://tieba.baidu.com/p/(\d+)', url)[0]
+    headers = {}
+    headers['Accept'] = ''
+    headers['Referer'] = url
+    headers['Origin'] = 'https://tieba.baidu.com'
+    resp = requests.request(method='GET', data=data, headers=headers, url=delete_url, timeout=2)
+    print(resp.status_code)
+    print(resp.text)
+
+
 def start(search_data):
-    a = article(search_data)
+    a = article_runner(search_data)
     articles = a.start()
     print(len(articles))
-    c = content(articles=articles)
+    c = content_runner(articles=articles)
     all_user_contents = c.start()
     for u in all_user_contents:
         print(u.to_dict())
 
 
 if __name__ == '__main__':
-    a = article('相亲')
-    articles = a.start()
-    print(len(articles))
-    c = content(articles=articles)
-    all_user_contents = c.start()
-    for u in all_user_contents:
-        print(u.to_dict())
+    delete_article('https://tieba.baidu.com/p/5887099963')
+    print('\u9429\u9550\u7ff0')
