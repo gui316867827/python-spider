@@ -74,4 +74,6 @@ def test_set():
     print(l)
     
 if __name__ == '__main__':
-    test_set()
+    r = [1,2,3,4,5]
+    r = list(set(r))
+    print(r[0])

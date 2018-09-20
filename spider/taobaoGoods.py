@@ -8,6 +8,7 @@ import threading
 import re
 import json
 import time
+import copy
 
 
 class shop():
@@ -40,8 +41,11 @@ def parse_auctionSku(rateContent, auctionSku):
     style = ss[0].split(':')[1] 
     size = ss[1].split(':')[1]
     data['color'] = style
-    data['size'] = re.findall('(\d+)', size)[0]
-    data['cup'] = size.replace(data['size'], '')
+    try:
+        data['size'] = re.findall('(\d+)', size)[0]
+        data['cup'] = size.replace(data['size'], '')
+    except:
+        data['size'] = size
     return data
 
 
@@ -60,7 +64,8 @@ class content_runner():
                 self.nick_urls[s] = [shop_content_url]
 
     def __get_content_of_shop__(self):
-        for s in self.nick_urls:
+        keys = list(self.nick_urls.keys())
+        for s in keys:
             urls = self.nick_urls.pop(s)
             for url in urls:
                 self.__get_contents__(s, url)
@@ -144,7 +149,7 @@ class shop_runner():
             t.start()
         for t in thread_list:
             t.join()
-        self.__shops__ = set(self.__shops__)
+        self.__shops__ = list(set(self.__shops__))
         print('has get %d shops.....cost %ds' % (len(self.__shops__), (time.time() - start_time)))
         return self.__shops__
 
@@ -152,7 +157,7 @@ class shop_runner():
 def start(search_data):
     s = shop_runner(search_data)
     shops = s.start()
-    c = content_runner(shops)
+    c = content_runner(shops[len(shops) - 1:])
     return c.start()
 
 
