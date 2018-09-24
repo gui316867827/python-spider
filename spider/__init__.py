@@ -11,6 +11,16 @@ import requests
 from bs4 import BeautifulSoup
 from multiprocessing import cpu_count
 import threading
+import re
+from re import RegexFlag
+
+emoji_pattern = re.compile(
+    u"(\ud83d[\ude00-\ude4f])|"  # emoticons
+    u"(\ud83c[\udf00-\uffff])|"  # symbols & pictographs (1 of 2)
+    u"(\ud83d[\u0000-\uddff])|"  # symbols & pictographs (2 of 2)
+    u"(\ud83d[\ude80-\udeff])|"  # transport & map symbols
+    u"(\ud83c[\udde0-\uddff])"  # flags (iOS)
+    "+", flags=RegexFlag.UNICODE)
 
 
 class thread_manager():
@@ -62,6 +72,19 @@ def assert_data(func, *args):
         return func(*args)
     except Exception as ex:
         print(ex)
+
+
+def delete_unsupport_unicode(s):
+    try:
+        text = s.decode('utf8')
+    except:
+        print('unsupport unicode : utf8')
+        return 
+    try:
+        highpoints = re.compile(u'[\U00010000-\U0010ffff]')
+    except re.error:
+        highpoints = re.compile(u'[\uD800-\uDBFF][\uDC00-\uDFFF]')
+    return highpoints.sub(u'', text)
 
 
 def get_data(url, headers={}, encoding='utf8'):

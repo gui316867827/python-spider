@@ -3,12 +3,13 @@ Created on Sep 5, 2018
 
 @author: F-Monkey
 '''
-from spider import get_data
+from spider import get_data, emoji_pattern
 import threading
 import re
 import json
 import time
-import copy
+headers = {}
+cookie = {}
 
 
 class shop():
@@ -17,6 +18,9 @@ class shop():
         self.nick = nick
         self.shopId = shopId
         self.sellerId = sellerId
+
+    def addContents(self, contents):
+        self.contents = contents
 
     def __hash__(self):
         return hash(self.nick + self.sellerId + self.shopId)
@@ -31,21 +35,25 @@ class shop():
         data['nick'] = self.nick
         data['shopId'] = self.shopId
         data['sellerId'] = self.sellerId
-        return json.dumps(data)
+        data['bras'] = self.contents
+        return data
 
         
 def parse_auctionSku(rateContent, auctionSku):
     data = {}
-    data['rateContent'] = rateContent
-    ss = auctionSku.split(';')
-    style = ss[0].split(':')[1] 
-    size = ss[1].split(':')[1]
-    data['color'] = style
-    try:
-        data['size'] = re.findall('(\d+)', size)[0]
-        data['cup'] = size.replace(data['size'], '')
-    except:
-        data['size'] = size
+    data['rateContent'] = emoji_pattern.sub(r'', rateContent)
+    if ';' in auctionSku:
+        ss = auctionSku.split(';')
+        style = ss[0].replace('颜色分类:', '')
+        size = ss[1].replace('尺码:', '')
+        data['color'] = style
+        try:
+            data['size'] = re.findall('(\d+)', size)[0]
+            data['cup'] = size.replace(data['size'], '')
+        except:
+            data['size'] = size
+    else:
+        data['auctionSku'] = auctionSku
     return data
 
 
@@ -66,9 +74,12 @@ class content_runner():
     def __get_content_of_shop__(self):
         keys = list(self.nick_urls.keys())
         for s in keys:
-            urls = self.nick_urls.pop(s)
-            for url in urls:
-                self.__get_contents__(s, url)
+            if self.nick_urls.__contains__(s):
+                urls = self.nick_urls.pop(s)
+                for url in urls:
+                    self.__get_contents__(s, url)
+            else:
+                continue
     
     def __get_content__(self, s, data):
         json_ = json.loads(data.replace(r'jsonp128(', '')[:-2 if data[:-1] == ',' else -1])
@@ -95,7 +106,7 @@ class content_runner():
             pageNum += 1
             if data and data != last_data:
                 last_data = data
-                self.__get_content__(s.to_dict(), data)
+                self.__get_content__(s, data)
             else:
                 if data:
                     break
@@ -113,13 +124,13 @@ class content_runner():
 
         
 class shop_runner():
-    shops_base_url = 'https://s.taobao.com/search?data-value={pageNum}&ajax=true&callback={callback}&q={search_data}'
+    shops_base_url = 'https://s.taobao.com/search?data-value={pageNum}&ajax=true&callback={callback}&q={search_data}&s={pageNum}'
     call_back = 'jsonp1077'
     __shops__ = []
 
     def __init__(self, goodsName):
         url = self.shops_base_url.replace('{search_data}', goodsName).replace('{callback}', self.call_back);
-        self.pages = [url.replace('{pageNum}', str(44 * i)) for i in range(100)]
+        self.pages = [url.replace('{pageNum}', str(44 * i)) for i in range(15)]
     
     def __get_one_page_shops__(self):
         self.lock.acquire()
@@ -157,9 +168,23 @@ class shop_runner():
 def start(search_data):
     s = shop_runner(search_data)
     shops = s.start()
-    c = content_runner(shops[len(shops) - 1:])
-    return c.start()
+    c = content_runner(shops)
+    result = []
+    nick_rate_msg = c.start();
+    for shop in nick_rate_msg:
+        shop.addContents(nick_rate_msg[shop])
+        result.append(shop.to_dict())
+    return result
+
+
+import pymysql
+
+
+def save_to_mysql(shops):
+    for shop in shops:
+        pymysql.connect("")
 
 
 if __name__ == '__main__':
-    start('文胸')
+    for s in start('文胸'):
+        print(s)

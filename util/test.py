@@ -10,6 +10,8 @@ from PIL import Image
 from pytesseract.pytesseract import image_to_string
 import pytesseract
 from _io import StringIO
+import requests
+from spider import get_data
 
 
 def test_dict():
@@ -47,7 +49,6 @@ def trim_json():
         print(k)
 
 
-
 def trans_str(s):
     return s.replace('=', '').replace('?', '').replace('x', '*')
 
@@ -72,8 +73,19 @@ def test_dict1():
 def test_set():
     l = range(50)
     print(l)
+
+
+def subStr(content):
+    return content[:]
+
+
+def request__(file, url):
+    with open(file, 'w') as f:
+        data = get_data(url)
+        print(data)
+        f.write(data)
+
     
 if __name__ == '__main__':
-    r = [1,2,3,4,5]
-    r = list(set(r))
-    print(r[0])
+        #request__('1', 'https://s.taobao.com/search?data-key=s%2Cps&data-value=0%2C1&ajax=true&_ksTS=1537662580742_866&callback=jsonp867&initiative_id=tbindexz_20170306&ie=utf8&spm=a21bo.2017.201856-taobao-item.2&sourceId=tb.index&search_type=item&ssid=s5-e&commend=all&imgfile=&q=%E6%96%87%E8%83%B8&suggest=history_1&_input_charset=utf-8&wq=wenxiong&suggest_query=wenxiong&source=suggest&bcoffset=-6&ntoffset=0&p4ppushleft=1%2C48&s=132')
+        request__('2', 'https://s.taobao.com/search?data-key=s%2Cps&data-value=0%2C1&ajax=true&_ksTS=1537662580742_866&callback=jsonp867&initiative_id=tbindexz_20170306&ie=utf8&spm=a21bo.2017.201856-taobao-item.2&sourceId=tb.index&search_type=item&ssid=s5-e&commend=all&imgfile=&q=%E6%96%87%E8%83%B8&suggest=history_1&_input_charset=utf-8&wq=wenxiong&suggest_query=wenxiong&source=suggest&bcoffset=-6&ntoffset=0&p4ppushleft=1%2C48&s=176')
